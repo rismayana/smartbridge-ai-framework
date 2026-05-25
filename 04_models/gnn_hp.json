@@ -1,0 +1,16 @@
+{
+  "corr_threshold": 0.5,
+  "node_feat_size": 8,
+  "hidden_channels": 32,
+  "n_gcn_layers": 2,
+  "dropout": 0.2,
+  "batch_size": 256,
+  "learning_rate": 0.0003,
+  "n_epochs": 60,
+  "patience": 8,
+  "clip_grad": 0.5,
+  "threshold_pct": 95,
+  "max_train_windows": null,
+  "best_val_loss": 23.620328134993247,
+  "epochs_trained": 2
+}

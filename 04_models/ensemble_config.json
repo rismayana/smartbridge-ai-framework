@@ -1,0 +1,28 @@
+{
+  "weights": {
+    "lstm": 0.3333,
+    "iforest": 0.3333,
+    "gnn": 0.3333
+  },
+  "threshold": 0.43746515214443205,
+  "weight_method": "f1",
+  "models": [
+    "lstm",
+    "iforest",
+    "gnn"
+  ],
+  "metrics": {
+    "model": "Ensemble_Fusion",
+    "threshold": 0.43746515214443205,
+    "precision": 0.0882,
+    "recall": 0.15,
+    "f1": 0.1111,
+    "auc": 0.4481,
+    "tn": 745,
+    "fp": 155,
+    "fn": 85,
+    "tp": 15,
+    "n_test_windows": 1000,
+    "n_test_abnormal": 100
+  }
+}

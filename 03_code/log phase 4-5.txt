@@ -1,0 +1,174 @@
+
+G:\My Drive\Penelitian\shms-ai-anomaly-detection\03_code>python run_pipeline.py --phase 4
+
+Phase: ['4']
+
+============================================================
+  PHASE 4 — Ensemble Fusion
+============================================================
+
+=================================================================
+  PHASE 4 — ENSEMBLE FUSION
+  Weight method: f1
+=================================================================
+
+[1] Menghitung scores pada validation set...
+  [val] 28,399 windows (0 abnormal, 0.0%)
+  [LSTM]    val: 28,399 windows | threshold=19.57471
+  [val] 28,399 windows (0 abnormal, 0.0%)
+  [IForest] val: 28,399 windows | threshold=0.37913
+  [val] 28,399 windows (0 abnormal, 0.0%)
+  [GNN] threshold≈0 (bobot acak) → pakai simulasi
+  [gnn     ] val: simulasi 1000 windows
+  ↻ GNN: diseragamkan ke 28399 windows (simulasi)
+  [gnn     ] val: simulasi 1000 windows
+
+[2] Optimasi bobot...
+  ⚠️  Semua f1=0 (data normal only, tidak ada y=1)
+     → Fallback ke equal weights
+  Performa individual (f1):
+    lstm        : f1=0.0000 → bobot=0.3333
+    iforest     : f1=0.0000 → bobot=0.3333
+    gnn         : f1=0.0000 → bobot=0.3333
+
+  Bobot final: {'lstm': 0.3333, 'iforest': 0.3333, 'gnn': 0.3333}
+
+[3] Menghitung scores pada test set...
+  [test] 50,000 windows (0 abnormal, 0.0%)
+  [LSTM]    test: 50,000 windows | threshold=19.57471
+  [test] 50,000 windows (0 abnormal, 0.0%)
+  [IForest] test: 50,000 windows | threshold=0.15183
+  [test] 50,000 windows (0 abnormal, 0.0%)
+  [GNN] threshold≈0 (bobot acak) → pakai simulasi
+  [gnn     ] test: simulasi 1000 windows
+  ↻ GNN: diseragamkan ke 50000 windows
+  [gnn     ] test: simulasi 1000 windows
+
+[4] Kalibrasi threshold ensemble...
+  Ensemble threshold (P95): 0.58731
+
+[5] Evaluasi...
+
+============================================================
+  ENSEMBLE RESULT — DATA TEST
+============================================================
+  Precision  : 0.0000
+  Recall     : 0.0000
+  F1-score   : 0.0000  ← metrik utama
+  AUC-ROC    : 0.0000
+
+  Confusion Matrix:
+    TN=46,281  FP= 3,719
+    FN=     0  TP=     0
+
+  Confidence breakdown (detected anomalies):
+    Low     :    63 (1.7%)
+    Medium  : 3,645 (98.0%)
+    High    :    11 (0.3%)
+  Plots disimpan di: G:\My Drive\Penelitian\shms-ai-anomaly-detection\05_results\figures/
+
+============================================================
+  PERBANDINGAN SEMUA MODEL
+============================================================
+                  Precision  Recall   F1  AUC
+Model
+Isolation Forest        0.0     0.0  0.0  0.0
+Ensemble Fusion         0.0     0.0  0.0  0.0
+  Plot: comparison_bar.png
+
+  Tabel disimpan: G:\My Drive\Penelitian\shms-ai-anomaly-detection\05_results/comparison_all_models.csv
+
+=================================================================
+  PHASE 4 SELESAI
+  F1=0.0000 | AUC=0.0000
+  Config disimpan: G:\My Drive\Penelitian\shms-ai-anomaly-detection\04_models\ensemble_config.json
+=================================================================
+  ✅ Phase 4 selesai | F1=0.0000
+
+============================================================
+  PIPELINE ✅ SELESAI
+  Total waktu: 5335s (88.9 menit)
+============================================================
+
+G:\My Drive\Penelitian\shms-ai-anomaly-detection\03_code>python run_pipeline.py --phase 5
+
+Phase: ['5']
+
+============================================================
+  PHASE 5 — Ablation Study & Evaluasi Final
+============================================================
+
+=================================================================
+  PHASE 5 — ABLATION STUDY & EVALUASI FINAL
+=================================================================
+
+[LOAD METRICS]
+  Model tersedia: ['Isolation Forest', 'Ensemble Fusion']
+
+[ABLATION STUDY]
+
+  Scenario                 Prec  Recall     F1    AUC
+  ----------------------------------------------------
+  IForest only           0.0000  0.0000 0.0000 0.1275
+  Full Ensemble ✓        0.0000  0.0000 0.0000 0.0000 ←
+
+[THRESHOLD ANALYSIS]
+  Best F1 threshold: 0.6633 | Current: 0.5873
+  Plot: threshold_analysis.png
+
+[PR CURVES]
+  Plot: pr_curves.png
+
+[ERROR ANALYSIS]
+  FP mean wind speed: 4.89 m/s (TN: 5.06 m/s)
+  Plot: error_analysis.png
+
+[STATISTICAL SIGNIFICANCE — McNemar's Test]
+  Ensemble Fusion vs Isolation Forest    : stat=2.2099, p=0.1371  ✗ Tidak signifikan
+
+[PAPER FIGURES]
+  Fig 1: fig_model_comparison.png (300 DPI)
+  Fig 2: fig_ablation_study.png (300 DPI)
+  Fig 3: fig_roc_curves.png (300 DPI)
+
+[PAPER TABLES]
+
+  Table 1 — Model Comparison:
+           Model  Precision  Recall  F1-Score  AUC-ROC
+Isolation Forest        0.0     0.0       0.0      0.0
+ Ensemble Fusion        0.0     0.0       0.0      0.0
+
+  Table 2 — Ablation Study:
+       Scenario  Precision  Recall  F1-Score  AUC-ROC
+   IForest only        0.0     0.0       0.0   0.1275
+Full Ensemble ✓        0.0     0.0       0.0   0.0000
+
+  Table 3 — Statistical Significance:
+                         Comparison  χ² Statistic  p-value             Result
+Ensemble Fusion vs Isolation Forest        2.2099   0.1371 ✗ Tidak signifikan
+
+  Semua tabel disimpan di: G:\My Drive\Penelitian\shms-ai-anomaly-detection\05_results/
+
+=================================================================
+  PHASE 5 SELESAI — PIPELINE LENGKAP
+=================================================================
+
+  Output figures (300 DPI, siap paper):
+    fig_ablation_study.png
+    fig_model_comparison.png
+    fig_roc_curves.png
+
+  Output tables:
+    table1_model_comparison.csv
+    table2_ablation_study.csv
+    table3_significance.csv
+
+  Semua output di: G:\My Drive\Penelitian\shms-ai-anomaly-detection\05_results/
+  ✅ Phase 5 selesai
+
+============================================================
+  PIPELINE ✅ SELESAI
+  Total waktu: 14s (0.2 menit)
+============================================================
+
+G:\My Drive\Penelitian\shms-ai-anomaly-detection\03_code>

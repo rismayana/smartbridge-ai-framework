@@ -1,0 +1,15 @@
+{
+  "n_channels": 17,
+  "hidden_size": 64,
+  "num_layers": 2,
+  "dropout": 0.2,
+  "batch_size": 256,
+  "learning_rate": 0.0003,
+  "n_epochs": 60,
+  "patience": 8,
+  "clip_grad": 0.5,
+  "max_train_windows": null,
+  "threshold_pct": 95,
+  "best_val_loss": 18.4062307296603,
+  "epochs_trained": 27
+}

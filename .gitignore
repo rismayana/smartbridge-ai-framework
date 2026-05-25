@@ -1,0 +1,119 @@
+# ─── DATA BESAR — simpan di GDrive, bukan GitHub ───
+02_data/raw/
+02_data/abnormal/
+02_data/stat/
+02_data/processed/*.npy
+02_data/processed/*.pkl
+02_data/processed/nov2025/
+02_data/processed/*.csv
+
+# ─── MODEL — file bisa ratusan MB ───────────────────
+04_models/*.pt
+04_models/*.pth
+04_models/*.pkl
+04_models/*.h5
+
+# ─── HASIL EKSPERIMEN ────────────────────────────────
+05_results/
+# metrics_summary.csv dan experiment_log.csv tetap di-track
+!05_results/metrics_summary.csv
+!05_results/experiment_log.csv
+
+# ─── PAPER — simpan di GDrive ────────────────────────
+01_paper/draft/
+01_paper/submission/
+01_paper/template-jurnal/
+# figures untuk paper boleh di-track jika ukurannya kecil
+# 01_paper/figures/
+
+# ─── REFERENSI PDF — simpan di GDrive ───────────────
+06_references/papers/
+
+# ─── PYTHON ──────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# ─── JUPYTER ─────────────────────────────────────────
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+# output cell notebook tidak perlu di-track
+# hapus output sebelum commit: Cell → All Output → Clear
+
+# ─── VIRTUAL ENVIRONMENT ─────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+
+# ─── IDE & OS ────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── ENVIRONMENT VARIABLES ───────────────────────────
+.env
+.env.local
+secrets.py
+
+# ─── LOG & TEMP ──────────────────────────────────────
+*.log
+*.tmp
+*.bak
+
+# macOS/Linux hidden
+*.DS_Store
+
+# Windows cache
+ehthumbs.db
+
+# Python cache
+*.pytest_cache/
+.mypy_cache/
+
+# Notebook autosave
+*.nbconvert.ipynb
+
+# Torch compile/cache
+*.ptl
+
+# TensorBoard
+runs/
+logs/
+
+# Temporary experiment outputs
+tmp/
+temp/
+
+# Local configs
+config_local.py
+
+*.docx
+*.log
+
+# Temporary / accidental files
+*.bak
+*.old
+*.backup
+*.tmp
+
+# Strange artifacts
+dict
+np.ndarray
+pd.DataFrame
+
+# Logs
+logs/
+
+# PDFs outside paper assets
+03_code/*.pdf
