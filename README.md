@@ -2,9 +2,6 @@
 
 > AI-driven anomaly detection framework for cable-stayed bridge monitoring using multi-sensor fusion, temporal modeling, statistical outlier analysis, and graph-based spatial intelligence.
 
-> **Status**: In Progress  
-> **Target Publication**: Journal of Computing Theories and Applications (JCTA) — August 2026
-
 ---
 
 # Overview
