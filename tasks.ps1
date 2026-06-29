@@ -41,7 +41,12 @@ function Show-Help {
     Write-Host "    pipeline       Phase 3B + 4 + 5 (pipeline lokal penuh)"
     Write-Host ""
     Write-Host "  MLFLOW" -ForegroundColor Yellow
-    Write-Host "    mlflow-ui      Buka MLflow UI lokal (http://localhost:5000)"
+    Write-Host "    mlflow-ui         Buka MLflow UI lokal (http://localhost:5000)"
+    Write-Host ""
+    Write-Host "  MODEL REGISTRY" -ForegroundColor Yellow
+    Write-Host "    registry-list     List semua model terdaftar + stage"
+    Write-Host "    registry-register Daftarkan IForest terbaik ke Staging"
+    Write-Host "    registry-promote  Promosikan model ke Production"
     Write-Host ""
     Write-Host "  Untuk LSTM dan GNN: jalankan notebook di Google Colab" -ForegroundColor DarkGray
     Write-Host "    03_code/notebooks/SHMS_Phase3A_LSTM_Autoencoder.ipynb" -ForegroundColor DarkGray
@@ -110,6 +115,21 @@ switch ($Task) {
         Write-Host "[mlflow-ui] Membuka MLflow UI di http://localhost:5000" -ForegroundColor Cyan
         Write-Host "Tekan Ctrl+C untuk berhenti." -ForegroundColor DarkGray
         python -m mlflow ui --backend-store-uri mlruns/ --port 5000
+    }
+
+    # Model Registry
+    "registry-list" {
+        Write-Host "[registry-list] List semua model di registry" -ForegroundColor Cyan
+        python 03_code/model_registry.py list
+    }
+    "registry-register" {
+        Write-Host "[registry-register] Daftarkan model IForest terbaik ke Staging" -ForegroundColor Cyan
+        python 03_code/model_registry.py register --stage Staging
+    }
+    "registry-promote" {
+        Write-Host "[registry-promote] Promosikan model ke stage tertentu" -ForegroundColor Cyan
+        Write-Host "Contoh: python 03_code/model_registry.py promote iforest 1 --stage Production" -ForegroundColor DarkGray
+        python 03_code/model_registry.py promote iforest 1 --stage Production
     }
 
     # Default

@@ -118,6 +118,43 @@ import glob
 for fig_path in glob.glob("/content/drive/MyDrive/Penelitian/shms-ai-anomaly-detection/05_results/figures/lstm_*.png"):
     mlflow.log_artifact(fig_path, artifact_path="figures")
 
+run_id = mlflow.active_run().info.run_id
 mlflow.end_run()
-print(f"MLflow run selesai. Lihat hasil di: https://dagshub.com/rismayana/shms-ai-anomaly-detection")
+print(f"MLflow run selesai. Run ID: {run_id}")
+print(f"Lihat hasil di: https://dagshub.com/rismayana/shms-ai-anomaly-detection")
+"""
+
+
+# ══════════════════════════════════════════════════════════════════
+# CELL 4 — Daftarkan model ke MLflow Model Registry
+# Jalankan setelah Cell 3 (setelah run selesai)
+# ══════════════════════════════════════════════════════════════════
+"""
+# Nama model di registry — pilih sesuai model yang baru dilatih
+MODEL_REGISTRY_NAME = "shms-lstm-autoencoder"   # atau "shms-gnn-autoencoder"
+
+# Daftarkan ke Staging
+mv = mlflow.register_model(
+    model_uri = f"runs:/{run_id}/{RUN_NAME}",
+    name      = MODEL_REGISTRY_NAME,
+)
+print(f"Model terdaftar: {MODEL_REGISTRY_NAME} v{mv.version} -> Staging")
+
+# (Opsional) Promosikan ke Production jika sudah divalidasi
+# from mlflow.tracking import MlflowClient
+# client = MlflowClient()
+# client.transition_model_version_stage(
+#     name    = MODEL_REGISTRY_NAME,
+#     version = mv.version,
+#     stage   = "Production",
+# )
+# print(f"Model dipromosikan ke Production")
+
+# List semua model di registry
+from mlflow.tracking import MlflowClient
+client = MlflowClient()
+print("\nModel Registry saat ini:")
+for rm in client.search_registered_models():
+    for v in client.get_latest_versions(rm.name):
+        print(f"  {rm.name:<35} v{v.version}  [{v.current_stage}]")
 """

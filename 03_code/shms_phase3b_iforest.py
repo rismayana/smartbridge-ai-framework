@@ -674,10 +674,12 @@ def _log_to_mlflow(metrics: dict):
             })
 
             # Log model sklearn
+            run_id = None
             model_path = MODEL_DIR / "isolation_forest.pkl"
             if model_path.exists():
                 iforest_loaded = __import__("joblib").load(model_path)
                 mlflow.sklearn.log_model(iforest_loaded, "isolation_forest")
+                run_id = mlflow.active_run().info.run_id
 
             # Log artifacts (plot hasil evaluasi)
             for fig_name in [
@@ -692,6 +694,16 @@ def _log_to_mlflow(metrics: dict):
 
             print(f"  [MLflow] Run logged: isolation_forest | "
                   f"F1={metrics['f1']:.4f} | AUC={metrics['auc']:.4f}")
+
+        # Daftarkan ke Model Registry setelah run selesai
+        if run_id:
+            from model_registry import register_model
+            register_model(
+                run_id        = run_id,
+                model_key     = "iforest",
+                artifact_path = "isolation_forest",
+                stage         = "Staging",
+            )
 
     except Exception as e:
         print(f"  [MLflow] Logging dilewati: {e}")

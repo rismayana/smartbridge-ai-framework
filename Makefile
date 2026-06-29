@@ -108,3 +108,21 @@ pipeline:
 .PHONY: mlflow-ui
 mlflow-ui:
 	$(PYTHON) -m mlflow ui --backend-store-uri mlruns/ --port 5000
+
+# ────────────────────────────────────────────────────────────────
+# MODEL REGISTRY
+# ────────────────────────────────────────────────────────────────
+REGISTRY = $(CODE)/model_registry.py
+
+.PHONY: registry-list
+registry-list:
+	$(PYTHON) $(REGISTRY) list
+
+.PHONY: registry-register
+registry-register:
+	$(PYTHON) $(REGISTRY) register --stage Staging
+
+.PHONY: registry-promote
+registry-promote:
+	@echo "Usage: make registry-promote MODEL=iforest VERSION=1 STAGE=Production"
+	$(PYTHON) $(REGISTRY) promote $(MODEL) $(VERSION) --stage $(STAGE)
