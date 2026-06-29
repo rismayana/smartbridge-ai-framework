@@ -44,7 +44,9 @@ def _load_api_key() -> str | None:
 
 def setup_wandb(run_name: str, config: dict,
                 tags: list[str] | None = None,
-                notes: str = ""):
+                notes: str = "",
+                project: str = "",
+                entity: str = ""):
     """
     Inisialisasi W&B run.
     - Jika WANDB_API_KEY tersedia → log ke wandb.ai (cloud)
@@ -65,20 +67,31 @@ def setup_wandb(run_name: str, config: dict,
         print("  [W&B] wandb tidak terinstall. Jalankan: pip install wandb")
         return None
 
+    # Prioritas project/entity: argumen → config.yaml → default konstanta
+    if not project or not entity:
+        try:
+            from config_loader import get_mlops_config
+            mlops_cfg = get_mlops_config()
+            project = project or mlops_cfg.get("wandb_project", WANDB_PROJECT)
+            entity  = entity  or mlops_cfg.get("wandb_entity",  WANDB_ENTITY)
+        except Exception:
+            project = project or WANDB_PROJECT
+            entity  = entity  or WANDB_ENTITY
+
     api_key = _load_api_key()
 
     if api_key:
         os.environ["WANDB_API_KEY"] = api_key
         mode = "online"
-        print(f"  [W&B] Online  : https://wandb.ai/{WANDB_ENTITY}/{WANDB_PROJECT}")
+        print(f"  [W&B] Online  : https://wandb.ai/{entity}/{project}")
     else:
         mode = "offline"
         print(f"  [W&B] Offline : hasil disimpan lokal, sync nanti dengan 'wandb sync'")
         print(f"  [INFO] Set WANDB_API_KEY di .env untuk sync otomatis ke wandb.ai")
 
     run = wandb.init(
-        project = WANDB_PROJECT,
-        entity  = WANDB_ENTITY,
+        project = project,
+        entity  = entity,
         name    = run_name,
         config  = config,
         tags    = tags or [],
