@@ -117,3 +117,9 @@ logs/
 
 # PDFs outside paper assets
 03_code/*.pdf
+
+# W&B local logs
+wandb/
+
+# MLflow local tracking
+mlruns/

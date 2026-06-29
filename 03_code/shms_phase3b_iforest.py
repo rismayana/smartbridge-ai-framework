@@ -28,6 +28,12 @@ import sys
 import warnings
 warnings.filterwarnings('ignore')
 
+try:
+    import wandb
+    _WANDB_AVAILABLE = True
+except ImportError:
+    _WANDB_AVAILABLE = False
+
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -610,7 +616,97 @@ def run_phase3b(retrain: bool = False) -> dict:
     print(f"\n  PHASE 3B SELESAI")
     print(f"  F1={metrics.get('f1', 0):.4f} | "
           f"AUC={metrics.get('auc', 0):.4f}")
+
+    _log_to_wandb(metrics)
+
     return metrics
+
+
+def _log_to_wandb(metrics: dict):
+    """Log hasil ke W&B jika tersedia. Gagal diam-diam agar tidak ganggu pipeline."""
+    if not _WANDB_AVAILABLE:
+        return
+    try:
+        sys.path.insert(0, str(Path(__file__).parent))
+        from wandb_config import setup_wandb, finish_wandb
+
+        run = setup_wandb(
+            run_name = "isolation_forest",
+            config   = {
+                "model"         : "IsolationForest",
+                "n_estimators"  : HP["n_estimators"],
+                "max_samples"   : HP["max_samples"],
+                "contamination" : HP["contamination"],
+                "max_features"  : HP["max_features"],
+                "random_state"  : HP["random_state"],
+                "threshold_pct" : HP["threshold_pct"],
+                "window_size"   : WINDOW_SIZE,
+                "n_channels"    : len(MAIN_CHANNELS),
+                "n_features"    : metrics.get("n_features", 0),
+            },
+            tags  = ["phase3b", "iforest", "cpu", "sklearn"],
+            notes = "Isolation Forest — deteksi anomali berbasis statistik",
+        )
+
+        if run is None:
+            return
+
+        # Metrics evaluasi
+        wandb.log({
+            "precision"       : metrics["precision"],
+            "recall"          : metrics["recall"],
+            "f1"              : metrics["f1"],
+            "auc"             : metrics["auc"],
+            "threshold"       : metrics["threshold"],
+            "tp"              : metrics["tp"],
+            "fp"              : metrics["fp"],
+            "tn"              : metrics["tn"],
+            "fn"              : metrics["fn"],
+            "n_test_windows"  : metrics["n_test_windows"],
+            "n_test_abnormal" : metrics["n_test_abnormal"],
+        })
+
+        # Confusion matrix sebagai W&B table
+        cm_table = wandb.Table(
+            columns = ["", "Pred Normal", "Pred Abnormal"],
+            data    = [
+                ["Actual Normal",   metrics["tn"], metrics["fp"]],
+                ["Actual Abnormal", metrics["fn"], metrics["tp"]],
+            ]
+        )
+        wandb.log({"confusion_matrix": cm_table})
+
+        # Log plot hasil evaluasi sebagai W&B Image
+        for fig_name in [
+            "iforest_evaluation.png",
+            "iforest_anomaly_timeline.png",
+            "iforest_score_distribution.png",
+            "iforest_feature_importance.png",
+        ]:
+            fig_path = RESULTS_DIR / "figures" / fig_name
+            if fig_path.exists():
+                wandb.log({fig_name.replace(".png", ""): wandb.Image(str(fig_path))})
+
+        # Log model sebagai W&B Artifact
+        model_path = MODEL_DIR / "isolation_forest.pkl"
+        if model_path.exists():
+            artifact = wandb.Artifact(
+                name = "isolation_forest_model",
+                type = "model",
+                description = f"IsolationForest F1={metrics['f1']:.4f}",
+                metadata = metrics,
+            )
+            artifact.add_file(str(model_path))
+            artifact.add_file(str(MODEL_DIR / "iforest_scaler.pkl"))
+            artifact.add_file(str(MODEL_DIR / "iforest_hp.json"))
+            wandb.log_artifact(artifact)
+
+        finish_wandb()
+        print(f"  [W&B] Run logged: isolation_forest | "
+              f"F1={metrics['f1']:.4f} | AUC={metrics['auc']:.4f}")
+
+    except Exception as e:
+        print(f"  [W&B] Logging dilewati: {e}")
 
 
 def main():
