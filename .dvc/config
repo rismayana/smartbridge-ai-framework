@@ -1,0 +1,5 @@
+[core]
+    autostage = true
+    remote = dagshub
+[remote "dagshub"]
+    url = https://dagshub.com/rismayana/shms-ai-anomaly-detection.dvc

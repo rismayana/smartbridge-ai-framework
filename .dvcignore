@@ -1,0 +1,6 @@
+﻿# DVC ignore file
+**/.ipynb_checkpoints
+**/__pycache__
+**/*.pyc
+**/tmp/
+**/temp/

@@ -117,3 +117,6 @@ logs/
 
 # PDFs outside paper assets
 03_code/*.pdf
+
+# MLflow local tracking
+mlruns/

@@ -28,6 +28,13 @@ import sys
 import warnings
 warnings.filterwarnings('ignore')
 
+try:
+    import mlflow
+    import mlflow.sklearn
+    _MLFLOW_AVAILABLE = True
+except ImportError:
+    _MLFLOW_AVAILABLE = False
+
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -610,7 +617,73 @@ def run_phase3b(retrain: bool = False) -> dict:
     print(f"\n  PHASE 3B SELESAI")
     print(f"  F1={metrics.get('f1', 0):.4f} | "
           f"AUC={metrics.get('auc', 0):.4f}")
+
+    _log_to_mlflow(metrics)
+
     return metrics
+
+
+def _log_to_mlflow(metrics: dict):
+    """Log hasil ke MLflow jika tersedia. Gagal diam-diam agar tidak ganggu pipeline."""
+    if not _MLFLOW_AVAILABLE:
+        return
+    try:
+        sys.path.insert(0, str(Path(__file__).parent))
+        from mlflow_config import setup_mlflow
+        setup_mlflow("shms-anomaly-detection")
+
+        with mlflow.start_run(run_name="isolation_forest"):
+            # Hyperparameter
+            mlflow.log_params({
+                "model"          : "IsolationForest",
+                "n_estimators"   : HP["n_estimators"],
+                "max_samples"    : HP["max_samples"],
+                "contamination"  : HP["contamination"],
+                "max_features"   : HP["max_features"],
+                "random_state"   : HP["random_state"],
+                "threshold_pct"  : HP["threshold_pct"],
+                "window_size"    : WINDOW_SIZE,
+                "n_channels"     : len(MAIN_CHANNELS),
+                "n_features"     : metrics.get("n_features", 0),
+            })
+
+            # Metrics
+            mlflow.log_metrics({
+                "precision"       : metrics["precision"],
+                "recall"          : metrics["recall"],
+                "f1"              : metrics["f1"],
+                "auc"             : metrics["auc"],
+                "threshold"       : metrics["threshold"],
+                "tp"              : metrics["tp"],
+                "fp"              : metrics["fp"],
+                "tn"              : metrics["tn"],
+                "fn"              : metrics["fn"],
+                "n_test_windows"  : metrics["n_test_windows"],
+                "n_test_abnormal" : metrics["n_test_abnormal"],
+            })
+
+            # Log model sklearn
+            model_path = MODEL_DIR / "isolation_forest.pkl"
+            if model_path.exists():
+                iforest_loaded = __import__("joblib").load(model_path)
+                mlflow.sklearn.log_model(iforest_loaded, "isolation_forest")
+
+            # Log artifacts (plot hasil evaluasi)
+            for fig_name in [
+                "iforest_evaluation.png",
+                "iforest_anomaly_timeline.png",
+                "iforest_score_distribution.png",
+                "iforest_feature_importance.png",
+            ]:
+                fig_path = RESULTS_DIR / "figures" / fig_name
+                if fig_path.exists():
+                    mlflow.log_artifact(str(fig_path), artifact_path="figures")
+
+            print(f"  [MLflow] Run logged: isolation_forest | "
+                  f"F1={metrics['f1']:.4f} | AUC={metrics['auc']:.4f}")
+
+    except Exception as e:
+        print(f"  [MLflow] Logging dilewati: {e}")
 
 
 def main():
