@@ -1,0 +1,91 @@
+# SHMS Bridge Anomaly Detection — Centralized Configuration
+# Finger Bridge, Batam
+#
+# File ini adalah satu-satunya sumber kebenaran untuk semua hyperparameter.
+# Ubah di sini, berlaku di semua script (lokal) dan notebook (Colab).
+#
+# Cara load di script Python:
+#   from config_loader import load_config
+#   cfg = load_config()
+#   HP_IFOREST = cfg["models"]["iforest"]
+
+# ────────────────────────────────────────────────────────────
+# PROJECT
+# ────────────────────────────────────────────────────────────
+project:
+  name: shms-anomaly-detection
+  bridge: Finger Bridge, Batam
+  paper: JCTA
+
+# ────────────────────────────────────────────────────────────
+# DATA & PREPROCESSING
+# ────────────────────────────────────────────────────────────
+data:
+  sample_rate: 100          # Hz — frekuensi sampling sensor utama
+  window_sec: 10            # detik per window
+  window_size: 1000         # = sample_rate × window_sec
+  window_step: 500          # overlap 50%
+  max_nan_pct: 0.10         # window dengan >10% NaN dibuang
+  n_channels: 17            # jumlah channel utama (9 accel + 8 cable)
+  n_features_per_ch: 8      # fitur statistik per channel (mean,std,min,max,ptp,rms,skew,kurt)
+
+# ────────────────────────────────────────────────────────────
+# MODEL — ISOLATION FOREST (lokal, CPU)
+# ────────────────────────────────────────────────────────────
+models:
+  iforest:
+    n_estimators: 200       # jumlah pohon — lebih banyak lebih stabil
+    max_samples: 0.8        # proporsi sampel per pohon
+    contamination: 0.05     # estimasi proporsi anomali (5%)
+    max_features: 1.0       # proporsi fitur per pohon
+    random_state: 42
+    n_jobs: -1              # pakai semua CPU core
+    threshold_pct: 95       # persentil score untuk threshold anomali
+
+# ────────────────────────────────────────────────────────────
+# MODEL — LSTM AUTOENCODER (Google Colab, GPU)
+# ────────────────────────────────────────────────────────────
+  lstm:
+    hidden_size: 64         # ukuran hidden state LSTM encoder & decoder
+    num_layers: 2           # jumlah layer LSTM
+    dropout: 0.2            # dropout untuk regularisasi
+    batch_size: 64          # windows per batch
+    learning_rate: 0.001    # Adam optimizer
+    n_epochs: 50            # maksimum epoch training
+    patience: 7             # early stopping patience
+    clip_grad: 1.0          # gradient clipping untuk stabilitas
+    threshold_pct: 95       # persentil reconstruction error → threshold
+
+# ────────────────────────────────────────────────────────────
+# MODEL — GNN AUTOENCODER (Google Colab, GPU)
+# ────────────────────────────────────────────────────────────
+  gnn:
+    corr_threshold: 0.5     # buat edge jika |korelasi| >= nilai ini
+    node_feat_size: 8       # fitur per node (sama dengan n_features_per_ch)
+    hidden_channels: 32     # ukuran hidden layer GCN
+    n_gcn_layers: 2         # jumlah GCN layer
+    dropout: 0.2
+    batch_size: 64
+    learning_rate: 0.001
+    n_epochs: 50
+    patience: 7
+    clip_grad: 1.0
+    threshold_pct: 95
+
+# ────────────────────────────────────────────────────────────
+# ENSEMBLE FUSION
+# ────────────────────────────────────────────────────────────
+  ensemble:
+    weight_method: f1       # cara hitung bobot: f1 | precision | recall | equal
+    threshold: 0.5          # threshold score ensemble untuk klasifikasi binary
+
+# ────────────────────────────────────────────────────────────
+# MLOPS — MLflow + DagsHub
+# ────────────────────────────────────────────────────────────
+mlops:
+  tracking: mlflow
+  experiment_name: shms-anomaly-detection
+  dagshub_username: rismayana
+  dagshub_repo: shms-ai-anomaly-detection
+  tracking_uri: https://dagshub.com/rismayana/shms-ai-anomaly-detection.mlflow
+  dvc_remote: dagshub

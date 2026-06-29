@@ -60,17 +60,28 @@ from shms_config import (
 
 # ─────────────────────────────────────────────────────────
 # HYPERPARAMETER
+# Default di sini sebagai fallback jika config.yaml tidak ada.
+# Nilai aktif diambil dari config.yaml via config_loader.
 # ─────────────────────────────────────────────────────────
 
 HP = {
-    "n_estimators"      : 200,    # jumlah pohon — lebih banyak lebih stabil
-    "max_samples"       : 0.8,    # proporsi sampel per pohon
-    "contamination"     : 0.05,   # estimasi proporsi anomali (5%)
-    "max_features"      : 1.0,    # proporsi fitur per pohon
+    "n_estimators"      : 200,
+    "max_samples"       : 0.8,
+    "contamination"     : 0.05,
+    "max_features"      : 1.0,
     "random_state"      : 42,
-    "n_jobs"            : -1,     # pakai semua CPU core
-    "threshold_pct"     : 95,     # persentil score untuk threshold
+    "n_jobs"            : -1,
+    "threshold_pct"     : 95,
 }
+
+# Override HP dari config.yaml jika tersedia
+try:
+    from config_loader import get_hp as _get_hp
+    _hp_from_cfg = _get_hp("iforest")
+    if _hp_from_cfg:
+        HP.update(_hp_from_cfg)
+except Exception:
+    pass
 
 
 # ─────────────────────────────────────────────────────────

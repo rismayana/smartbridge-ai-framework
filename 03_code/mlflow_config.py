@@ -43,7 +43,7 @@ def _load_token() -> str | None:
     return None
 
 
-def setup_mlflow(experiment_name: str = "shms-anomaly-detection") -> str:
+def setup_mlflow(experiment_name: str = "") -> str:
     """
     Setup MLflow tracking URI.
     - Jika DAGSHUB_TOKEN tersedia → tracking ke DagsHub (cloud, bisa dari Colab)
@@ -52,6 +52,16 @@ def setup_mlflow(experiment_name: str = "shms-anomaly-detection") -> str:
     Returns:
         tracking URI yang aktif
     """
+    # Prioritas experiment_name: argumen → config.yaml → default
+    if not experiment_name:
+        try:
+            from config_loader import get_mlops_config
+            experiment_name = get_mlops_config().get(
+                "experiment_name", "shms-anomaly-detection"
+            )
+        except Exception:
+            experiment_name = "shms-anomaly-detection"
+
     token = _load_token()
 
     if token:
